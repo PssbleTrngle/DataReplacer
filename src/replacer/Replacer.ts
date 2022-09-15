@@ -1,11 +1,9 @@
-import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver/dist'
+import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
+import { createDefaultMerger, Merger } from '@pssbletrngle/resource-merger'
 import chalk from 'chalk'
-import { readFileSync, writeFileSync } from 'fs'
-import { emptyDirSync, ensureDirSync } from 'fs-extra'
+import { emptyDirSync } from 'fs-extra'
 import minimatch from 'minimatch'
-import { dirname, join, resolve } from 'path'
-import { zip } from 'zip-a-folder'
-import { fileHash } from '../util.js'
+import { resolve } from 'path'
 import { MergeOptions } from './options.js'
 
 interface ReplaceEntry {
@@ -31,7 +29,8 @@ export default class Replacer {
       this.replace(`data/${filter.mod}/loot_tables/**/*.json`, search, replacement)
    }
 
-   public createAcceptor(outDir: string): Acceptor {
+   public createAcceptor(merger: Merger): Acceptor {
+      const mergeAcceptor = merger.createAcceptor()
       return (path, content) => {
          const input = content.toString()
 
@@ -44,10 +43,7 @@ export default class Replacer {
                return current.replace(entry.search, entry.replacement)
             }, input)
 
-            const out = join(outDir, path)
-            ensureDirSync(dirname(out))
-
-            writeFileSync(out, replaced)
+            mergeAcceptor(path, replaced)
          }
       }
    }
@@ -56,7 +52,8 @@ export default class Replacer {
       const outDir = this.options.zipOutput ? resolve('tmp') : this.options.output
       emptyDirSync(outDir)
 
-      const acceptor = this.createAcceptor(outDir)
+      const merger = createDefaultMerger({ ...this.options, includeAssets: true, includeData: true, title: 'Merged' })
+      const acceptor = this.createAcceptor(merger)
 
       console.group('Replacing resources...')
       await Promise.all(
@@ -67,12 +64,6 @@ export default class Replacer {
       )
       console.groupEnd()
 
-      if (this.options.zipOutput) {
-         console.log('Creating ZIP File...')
-         await zip(outDir, this.options.output)
-
-         const hash = fileHash(readFileSync(this.options.output), 'sha1')
-         console.log(`SHA256: ${hash}`)
-      }
+      await merger.finalize()
    }
 }
