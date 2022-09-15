@@ -1,3 +1,4 @@
+import { createResolvers } from '@pssbletrngle/pack-resolver'
 import chalk from 'chalk'
 import Replacer from '../replacer/Replacer.js'
 import getConfig from './config.js'
@@ -13,7 +14,9 @@ async function run() {
       replacer.replaceLootItem(search, replacement)
    })
 
-   await replacer.resolveAndRun(options)
+   const resolvers = await createResolvers(options)
+
+   await replacer.run(resolvers)
 }
 
 run().catch(async e => {

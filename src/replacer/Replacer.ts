@@ -1,14 +1,12 @@
+import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver/dist'
 import chalk from 'chalk'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { emptyDirSync, ensureDirSync } from 'fs-extra'
 import minimatch from 'minimatch'
-import { dirname, extname, join, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { zip } from 'zip-a-folder'
-import { exists, fileHash, listChildren } from '../util.js'
-import { MergeOptions, ResolveOptions } from './options.js'
-import ArchiveResolver from './resolver/ArchiveResolver.js'
-import FolderResolver from './resolver/FolderResolver.js'
-import IResolver, { Acceptor } from './resolver/IResolver.js'
+import { fileHash } from '../util.js'
+import { MergeOptions } from './options.js'
 
 interface ReplaceEntry {
    matches(path: string): boolean
@@ -76,32 +74,5 @@ export default class Replacer {
          const hash = fileHash(readFileSync(this.options.output), 'sha1')
          console.log(`SHA256: ${hash}`)
       }
-   }
-
-   resolveAndRun(options: ResolveOptions) {
-      // TODO replace by third library
-      if (!existsSync(options.from)) {
-         const missingDirectories = [options.from].map(it => '\n   ' + resolve(it))
-         throw new Error(`input directory not found: ${missingDirectories}`)
-      }
-
-      const packs = listChildren(options.from)
-
-      function resolversOf({ path, name, info }: typeof packs[0]) {
-         const paths = ['.']
-         return paths
-            .map(relativePath => {
-               const realPath = join(path, relativePath)
-               if (info.isFile() && ['.zip', '.jar'].includes(extname(name))) return new ArchiveResolver(realPath)
-               if (info.isDirectory()) return new FolderResolver(realPath)
-               return null
-            })
-            .filter(exists)
-      }
-
-      const resolvers = packs.flatMap(file => resolversOf(file).map(resolver => ({ ...file, resolver }))).filter(exists)
-      console.log(`Found ${resolvers.length} resource packs`)
-
-      return this.run(resolvers)
    }
 }

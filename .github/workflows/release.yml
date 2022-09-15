@@ -13,6 +13,13 @@ jobs:
       steps:
          - uses: actions/checkout@v3
 
+         - name: Update version
+           uses: jossef/action-set-json-field@v2
+           with:
+              file: package.json
+              field: version
+              value: ${{ github.event.release.tag_name }}
+
          - uses: actions/setup-node@v3
            with:
               node-version: 16

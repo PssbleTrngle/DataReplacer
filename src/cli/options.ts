@@ -1,7 +1,7 @@
 import arg from 'arg'
 import { existsSync, readFileSync, statSync } from 'fs'
 import { extname } from 'path'
-import { MergeOptions, ResolveOptions } from '../replacer/options.js'
+import { MergeOptions } from '../replacer/options.js'
 
 const args = arg({
    '--merge-config': String,
@@ -13,8 +13,9 @@ const args = arg({
    '-c': '--config',
 })
 
-export interface Options extends MergeOptions, ResolveOptions {
+export interface Options extends MergeOptions {
    config: string
+   from: string
 }
 
 // use from library
