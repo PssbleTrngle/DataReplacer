@@ -1,3 +1,3 @@
-export * from './cli/config.js'
+export { default as getConfig } from './cli/config.js'
 export * from './cli/options.js'
-export * as Replacer from './replacer/Replacer.js'
+export { default as Replacer } from './replacer/Replacer.js'
