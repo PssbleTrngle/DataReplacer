@@ -1,5 +1,5 @@
 import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
-import { createDefaultMergers, MergeOptions, Mergers } from '@pssbletrngle/resource-merger'
+import { createDefaultMergers, Mergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import chalk from 'chalk'
 import { emptyDirSync } from 'fs-extra'
 import minimatch from 'minimatch'
@@ -36,10 +36,10 @@ function resolveFilter(partialFilter: Partial<Filter> = {}) {
 export default class Replacer {
    private entries: ReplaceEntry[] = []
 
-   constructor(private readonly options: MergeOptions) {}
+   constructor(private readonly mergeOptions: MergeOptions) {}
 
    public replace(pattern: string, search: string, replacement: string, filter?: Partial<Filter>) {
-      resolveFilter(filter).map(({ mod, test, ...options }) => {
+      resolveFilter(filter).forEach(({ mod, test, ...options }) => {
          const resolvedPattern = pattern.replace(/\$mod/, mod)
          const matches: ReplaceEntry['matches'] = it => minimatch(it, resolvedPattern) && test(it)
          this.entries.push({ matches, search, replacement, options })
@@ -48,7 +48,7 @@ export default class Replacer {
 
    public replaceLootItem(search: string, replacement: string, filter?: Partial<Filter>) {
       const wrap = (s: string) => `"name": "${s}"`
-      this.replace('data/$mod/loot_tables/**/*.json', search, replacement, filter)
+      this.replace('data/$mod/loot_tables/**/*.json', wrap(search), wrap(replacement), filter)
    }
 
    public replaceLang(search: string, replacement: string, filter: Partial<Filter> = { ignoreCase: false }) {
@@ -56,12 +56,17 @@ export default class Replacer {
    }
 
    private format(content: string, path: string) {
-      switch (extname(path)) {
-         case '.json':
-         case '.mcmeta':
-            return format(content, { parser: 'json' })
-         default:
-            return content
+      try {
+         switch (extname(path)) {
+            case '.json':
+            case '.mcmeta':
+               return format(content, { parser: 'json' })
+            default:
+               return content
+         }
+      } catch {
+         console.warn(chalk.yellow(`Could not parse ${chalk.underline(path)}`))
+         return null
       }
    }
 
@@ -69,6 +74,7 @@ export default class Replacer {
       const mergeAcceptor = merger.createAcceptor()
       return (path, content) => {
          const input = this.format(content.toString(), path)
+         if (!input) return
 
          const matching = this.entries.filter(it => {
             if (!it.matches(path)) return false
@@ -89,10 +95,9 @@ export default class Replacer {
    }
 
    public async run(resolvers: { resolver: IResolver; name: string }[]) {
-      const outDir = this.options.zipOutput ? resolve('tmp') : this.options.output
-      emptyDirSync(outDir)
+      emptyDirSync(resolve('tmp'))
 
-      const merger = createDefaultMergers({ ...this.options, includeAssets: true, includeData: true, title: 'Merged' })
+      const merger = createDefaultMergers(this.mergeOptions)
       const acceptor = this.createAcceptor(merger)
 
       console.group('Replacing resources...')

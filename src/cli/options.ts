@@ -1,17 +1,14 @@
-import { getMergeOptions, MergeOptions } from '@pssbletrngle/resource-merger'
+import { Options as ResolverOptions } from '@pssbletrngle/pack-resolver'
+import { getMergeOptions, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import arg from 'arg'
 
 const args = arg({
    '--merge-config': String,
    '--config': String,
-   '--include-assets': Boolean,
-   '--include-data': Boolean,
-   '--from': String,
-   '--output': String,
    '-c': '--config',
 })
 
-export interface Options extends MergeOptions {
+export interface Options extends MergeOptions, ResolverOptions {
    config: string
 }
 

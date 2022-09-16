@@ -18,7 +18,7 @@ async function run() {
       replacer.replaceLang(search, replacement)
    })
 
-   const resolvers = await createResolvers(options)
+   const resolvers = createResolvers(options)
 
    await replacer.run(resolvers)
 }
