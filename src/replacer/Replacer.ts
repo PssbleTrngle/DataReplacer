@@ -1,9 +1,8 @@
-import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
+import { Acceptor, ResolverInfo } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Mergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import chalk from 'chalk'
-import { emptyDirSync } from 'fs-extra'
 import minimatch from 'minimatch'
-import { extname, resolve } from 'path'
+import { extname } from 'path'
 import { format } from 'prettier'
 
 interface ReplaceEntryOptions {
@@ -74,7 +73,7 @@ export default class Replacer {
       const mergeAcceptor = merger.createAcceptor()
       return (path, content) => {
          const input = this.format(content.toString(), path)
-         if (!input) return
+         if (!input) return false
 
          const matching = this.entries.filter(it => {
             if (!it.matches(path)) return false
@@ -89,14 +88,14 @@ export default class Replacer {
                return current.replace(new RegExp(entry.search, 'g'), entry.replacement)
             }, input)
 
-            mergeAcceptor(path, replaced)
+            return mergeAcceptor(path, replaced)
+         } else {
+            return false
          }
       }
    }
 
-   public async run(resolvers: { resolver: IResolver; name: string }[]) {
-      emptyDirSync(resolve('tmp'))
-
+   public async run(resolvers: ResolverInfo[]) {
       const merger = createDefaultMergers(this.mergeOptions)
       const acceptor = this.createAcceptor(merger)
 
