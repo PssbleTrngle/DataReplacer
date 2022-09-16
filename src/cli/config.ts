@@ -3,6 +3,7 @@ import { Options } from './options'
 
 interface ConfiguredReplacements {
    loot?: Record<string, string>
+   lang?: Record<string, string>
 }
 
 export default function getConfig(options: Options): ConfiguredReplacements {

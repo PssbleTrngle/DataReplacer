@@ -14,6 +14,10 @@ async function run() {
       replacer.replaceLootItem(search, replacement)
    })
 
+   Object.entries(config.lang ?? {}).forEach(([search, replacement]) => {
+      replacer.replaceLang(search, replacement)
+   })
+
    const resolvers = await createResolvers(options)
 
    await replacer.run(resolvers)

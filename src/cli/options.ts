@@ -16,7 +16,7 @@ export interface Options extends MergeOptions {
 }
 
 export default function getOptions(): Options {
-   const mergeOptions = getMergeOptions()
+   const mergeOptions = getMergeOptions(args['--merge-config'])
    return {
       ...mergeOptions,
       config: args['--config'] ?? 'replacements.json',

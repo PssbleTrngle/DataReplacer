@@ -3,24 +3,34 @@ import { createDefaultMergers, MergeOptions, Mergers } from '@pssbletrngle/resou
 import chalk from 'chalk'
 import { emptyDirSync } from 'fs-extra'
 import minimatch from 'minimatch'
-import { resolve } from 'path'
+import { extname, resolve } from 'path'
+import { format } from 'prettier'
+
+interface ReplaceEntryOptions {
+   ignoreCase: boolean
+}
 
 interface ReplaceEntry {
    matches(path: string): boolean
    search: string
    replacement: string
-}
-
-interface Filter {
-   mod: string | string[]
+   options: ReplaceEntryOptions
 }
 
 function arrayOrSelf<T>(value: T | T[]) {
    return Array.isArray(value) ? value : [value]
 }
 
-function resolveFilter(filter: Filter) {
-   return arrayOrSelf(filter.mod).map(mod => ({ mod }))
+interface Filter extends ReplaceEntryOptions {
+   mod: string | string[]
+   test(path: string): boolean
+}
+
+const defaultFilter: Filter = { mod: '*', test: () => true, ignoreCase: true }
+
+function resolveFilter(partialFilter: Partial<Filter> = {}) {
+   const filter = { ...defaultFilter, ...partialFilter }
+   return arrayOrSelf(filter.mod).map(mod => ({ ...filter, mod }))
 }
 
 export default class Replacer {
@@ -28,28 +38,49 @@ export default class Replacer {
 
    constructor(private readonly options: MergeOptions) {}
 
-   public replace(pattern: string, search: string, replacement: string) {
-      this.entries.push({ matches: it => minimatch(it, pattern), search, replacement })
+   public replace(pattern: string, search: string, replacement: string, filter?: Partial<Filter>) {
+      resolveFilter(filter).map(({ mod, test, ...options }) => {
+         const resolvedPattern = pattern.replace(/\$mod/, mod)
+         const matches: ReplaceEntry['matches'] = it => minimatch(it, resolvedPattern) && test(it)
+         this.entries.push({ matches, search, replacement, options })
+      })
    }
 
-   public replaceLootItem(search: string, replacement: string, filter: Filter = { mod: '*' }) {
-      resolveFilter(filter).map(({ mod }) => {
-         this.replace(`data/${mod}/loot_tables/**/*.json`, search, replacement)
-      })
+   public replaceLootItem(search: string, replacement: string, filter?: Partial<Filter>) {
+      const wrap = (s: string) => `"name": "${s}"`
+      this.replace('data/$mod/loot_tables/**/*.json', search, replacement, filter)
+   }
+
+   public replaceLang(search: string, replacement: string, filter: Partial<Filter> = { ignoreCase: false }) {
+      this.replace('assets/$mod/lang/*.json', search, replacement, filter)
+   }
+
+   private format(content: string, path: string) {
+      switch (extname(path)) {
+         case '.json':
+         case '.mcmeta':
+            return format(content, { parser: 'json' })
+         default:
+            return content
+      }
    }
 
    public createAcceptor(merger: Mergers): Acceptor {
       const mergeAcceptor = merger.createAcceptor()
       return (path, content) => {
-         const input = content.toString()
+         const input = this.format(content.toString(), path)
 
-         const matching = this.entries.filter(it => it.matches(path) && input.includes(it.search))
+         const matching = this.entries.filter(it => {
+            if (!it.matches(path)) return false
+            if (it.options.ignoreCase) return input.toLowerCase().includes(it.search.toLowerCase())
+            return input.includes(it.search)
+         })
 
          if (matching.length) {
             console.log(`Found ${matching.length} matches for ${chalk.underline(path)}`)
 
             const replaced = matching.reduce((current, entry) => {
-               return current.replace(entry.search, entry.replacement)
+               return current.replace(new RegExp(entry.search, 'g'), entry.replacement)
             }, input)
 
             mergeAcceptor(path, replaced)
