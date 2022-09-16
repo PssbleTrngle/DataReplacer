@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@pssbletrngle/pack-resolver': 1.1.0
+  '@pssbletrngle/pack-resolver': 1.1.1
   '@pssbletrngle/resource-merger': 1.1.4
   '@types/fs-extra': ^9.0.13
   '@types/lodash': ^4.14.184
@@ -22,7 +22,7 @@ specifiers:
   zip-a-folder: ^1.1.5
 
 dependencies:
-  '@pssbletrngle/pack-resolver': 1.1.0
+  '@pssbletrngle/pack-resolver': 1.1.1
   '@pssbletrngle/resource-merger': 1.1.4
   '@types/fs-extra': 9.0.13
   '@types/lodash': 4.14.184
@@ -130,16 +130,6 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
     dev: true
-
-  /@pssbletrngle/pack-resolver/1.1.0:
-    resolution: {integrity: sha512-5gndOxjEj2NrhtWaXxxZ+pPYOyeb3pHi1Glv/RvPGE42Cjy1SeA878IuS9kpGPS1xYlmlSeGihK0cxSWrwcMuw==, tarball: download/@pssbletrngle/pack-resolver/1.1.0/c381b7fb8742a2f3b3a724f15e5d8b2bab7438ca}
-    dependencies:
-      fs-extra: 10.1.0
-      lodash: 4.17.21
-      minimatch: 5.1.0
-      node-stream-zip: 1.15.0
-      typescript: 4.8.2
-    dev: false
 
   /@pssbletrngle/pack-resolver/1.1.1:
     resolution: {integrity: sha512-O0kmZRqFUrOwxPod2oSjnfodDFd5vfybEgasmEL9op5mm+oNceZfryw3GT3VaNqyJDQ2VojjFyxL1L/qjiU4FA==, tarball: download/@pssbletrngle/pack-resolver/1.1.1/4df9414183d960b858cf5c1092ea666522a684f4}
