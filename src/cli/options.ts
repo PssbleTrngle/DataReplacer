@@ -1,7 +1,5 @@
+import { getMergeOptions, MergeOptions } from '@pssbletrngle/resource-merger'
 import arg from 'arg'
-import { existsSync, readFileSync, statSync } from 'fs'
-import { extname } from 'path'
-import { MergeOptions } from '../replacer/options.js'
 
 const args = arg({
    '--merge-config': String,
@@ -15,29 +13,12 @@ const args = arg({
 
 export interface Options extends MergeOptions {
    config: string
-   from: string
 }
 
-// use from library
-function readConfig(optionsFile?: string) {
-   const file = optionsFile ?? args['--merge-config'] ?? '.mergerrc'
-   if (existsSync(file)) {
-      const buffer = readFileSync(file)
-      return JSON.parse(buffer.toString()) as Partial<Options>
-   }
-   return null
-}
-
-// call to getMergeOptions & getResolverOptions
-export default function getOptions(optionsFile?: string): Options {
-   const config = readConfig(optionsFile)
-   const output = args['--output'] ?? config?.output ?? 'merged.zip'
-   const existingOutputDir = existsSync(output) && statSync(output).isDirectory()
-
+export default function getOptions(): Options {
+   const mergeOptions = getMergeOptions()
    return {
-      from: args['--from'] ?? config?.from ?? 'resources',
-      output,
-      zipOutput: !existingOutputDir && ['.zip', '.jar'].includes(extname(output)),
+      ...mergeOptions,
       config: args['--config'] ?? 'replacements.json',
    }
 }

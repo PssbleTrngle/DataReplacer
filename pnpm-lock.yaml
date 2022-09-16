@@ -1,8 +1,8 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@pssbletrngle/pack-resolver': 1.0.6
-  '@pssbletrngle/resource-merger': 1.1.0
+  '@pssbletrngle/pack-resolver': 1.0.7
+  '@pssbletrngle/resource-merger': 1.1.2
   '@types/fs-extra': ^9.0.13
   '@types/lodash': ^4.14.184
   '@types/minimatch': ^3.0.5
@@ -20,8 +20,8 @@ specifiers:
   zip-a-folder: ^1.1.5
 
 dependencies:
-  '@pssbletrngle/pack-resolver': 1.0.6
-  '@pssbletrngle/resource-merger': 1.1.0
+  '@pssbletrngle/pack-resolver': 1.0.7
+  '@pssbletrngle/resource-merger': 1.1.2
   arg: 5.0.2
   chalk: 5.0.1
   fs-extra: 10.1.0
@@ -127,8 +127,8 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@pssbletrngle/pack-resolver/1.0.6:
-    resolution: {integrity: sha512-E6sqZAEDrZe7p0i4ODj4cy1gADvP6gEENaSYHgmYq8VtJ/A90+0TYnjAh5/E364ROAu16rgyEK8KVaMbE3cfQQ==, tarball: download/@pssbletrngle/pack-resolver/1.0.6/c181f15b0c1625bb92637f79f1e6577000604d5c}
+  /@pssbletrngle/pack-resolver/1.0.7:
+    resolution: {integrity: sha512-+6tUfmLY/AOijzmDEhWMDW4ERIXNhRpl9gWRHweNuZaEUikAYdfRCuXQvYNgEq4zb3MDUPEjVUMMoQfH5z66bg==, tarball: download/@pssbletrngle/pack-resolver/1.0.7/ab8e8c8c59c3f2eabd3aad2b3ea626d21b3f68e3}
     dependencies:
       fs-extra: 10.1.0
       lodash: 4.17.21
@@ -136,10 +136,10 @@ packages:
       typescript: 4.8.2
     dev: false
 
-  /@pssbletrngle/resource-merger/1.1.0:
-    resolution: {integrity: sha512-T31VTKLDYSYrsow3KareIaAMeUNwaCWhB+oApBQTbtxjA6kBd5/R2ywH+KdYn0wr3FS5nyuAQo7DBSGovfT8GQ==, tarball: download/@pssbletrngle/resource-merger/1.1.0/9054eb4c7232a6a3c5a1ba1c2f8bf077f307f59c}
+  /@pssbletrngle/resource-merger/1.1.2:
+    resolution: {integrity: sha512-x/OVa3WhqCHVJ1tsE8Lr53z352o/gEPwprzPilIq+q/9XTA3NWUsvtREoeHJSHxLHjvmZpNQVpQeAeFHbAuw4A==, tarball: download/@pssbletrngle/resource-merger/1.1.2/0a47d65265e07e574fc51d5aaf2a4c0d09b96f75}
     dependencies:
-      '@pssbletrngle/pack-resolver': 1.0.6
+      '@pssbletrngle/pack-resolver': 1.0.7
       arg: 5.0.2
       chalk: 5.0.1
       fs-extra: 10.1.0
