@@ -50,8 +50,11 @@ export default class Replacer {
       this.replace('data/$mod/loot_tables/**/*.json', wrap(search), wrap(replacement), filter)
    }
 
-   public replaceLang(search: string, replacement: string, filter: Partial<Filter> = { ignoreCase: false }) {
-      this.replace('assets/$mod/lang/*.json', search, replacement, filter)
+   public replaceLang(search: string, replacement: string, filter?: Partial<Filter & { lang: string }>) {
+      this.replace(`assets/$mod/lang/${filter?.lang ?? '*'}.json`, search, replacement, {
+         ignoreCase: false,
+         ...filter,
+      })
    }
 
    private format(content: string, path: string) {
