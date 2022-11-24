@@ -47,6 +47,7 @@ export default function getOptions(): Options {
 
    const mergeOptions = getMergeOptions(args['--merge-config'])
    return {
+      from: 'resources',
       ...mergeOptions,
       config: args['--config'] ?? 'replacements.json',
    }
