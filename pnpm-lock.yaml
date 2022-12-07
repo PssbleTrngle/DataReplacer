@@ -1,8 +1,8 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@pssbletrngle/pack-resolver': 1.1.1
-  '@pssbletrngle/resource-merger': 1.2.0
+  '@pssbletrngle/pack-resolver': 1.2.0
+  '@pssbletrngle/resource-merger': 1.2.2
   '@types/command-line-usage': ^5.0.2
   '@types/fs-extra': ^9.0.13
   '@types/lodash': ^4.14.184
@@ -24,8 +24,8 @@ specifiers:
   zip-a-folder: ^1.1.5
 
 dependencies:
-  '@pssbletrngle/pack-resolver': 1.1.1
-  '@pssbletrngle/resource-merger': 1.2.0
+  '@pssbletrngle/pack-resolver': 1.2.0
+  '@pssbletrngle/resource-merger': 1.2.2
   '@types/fs-extra': 9.0.13
   '@types/lodash': 4.14.184
   '@types/minimatch': 3.0.5
@@ -135,8 +135,8 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@pssbletrngle/pack-resolver/1.1.1:
-    resolution: {integrity: sha512-O0kmZRqFUrOwxPod2oSjnfodDFd5vfybEgasmEL9op5mm+oNceZfryw3GT3VaNqyJDQ2VojjFyxL1L/qjiU4FA==, tarball: download/@pssbletrngle/pack-resolver/1.1.1/4df9414183d960b858cf5c1092ea666522a684f4}
+  /@pssbletrngle/pack-resolver/1.2.0:
+    resolution: {integrity: sha512-vD6JRiTWxlgrljym6A0n9+bHIP57jUzDfla3Vv6r6MV0YBufA7v2xobyq8sm8YqaqA4API/XxhcXlN2Dr255kA==, tarball: download/@pssbletrngle/pack-resolver/1.2.0/2b8696a25bd8fda262133f00bd5883656aae4d4c}
     dependencies:
       fs-extra: 10.1.0
       lodash: 4.17.21
@@ -145,11 +145,17 @@ packages:
       typescript: 4.8.2
     dev: false
 
-  /@pssbletrngle/resource-merger/1.2.0:
-    resolution: {integrity: sha512-6ykkxL0EFpD4ijlkUAFtJB/8ZnmUN29HDV0mY3D7qEM14Bd69S4IEUp7eQbE+g6fEXNCaL4xRaEkB0jOTYLjHA==, tarball: download/@pssbletrngle/resource-merger/1.2.0/6d150e068b14d32f920092224de7e15bdcf84ced}
+  /@pssbletrngle/resource-merger/1.2.2:
+    resolution: {integrity: sha512-4s2y1J12t+PrvLNNGwOzWE+Fs20nB8hWAJMa2bE8q+TNfQPSiSLO0m9aH0QB9DG3BWCgmOBiG0YIxkSYcYBx1A==, tarball: download/@pssbletrngle/resource-merger/1.2.2/af50d1c43243795aaf3a61233a81807a132f9c43}
     hasBin: true
     dependencies:
-      '@pssbletrngle/pack-resolver': 1.1.1
+      '@pssbletrngle/pack-resolver': 1.2.0
+      '@types/command-line-usage': 5.0.2
+      '@types/fs-extra': 9.0.13
+      '@types/lodash': 4.14.184
+      '@types/minimatch': 3.0.5
+      '@types/node': 17.0.45
+      '@types/tmp': 0.2.3
       arg: 5.0.2
       chalk: 5.0.1
       command-line-usage: 6.1.3
@@ -180,7 +186,6 @@ packages:
 
   /@types/command-line-usage/5.0.2:
     resolution: {integrity: sha512-n7RlEEJ+4x4TS7ZQddTmNSxP+zziEG0TNsMfiRIxcIVXt71ENJ9ojeXmGO3wPoTdn7pJcU2xc3CJYMktNT6DPg==}
-    dev: true
 
   /@types/fs-extra/9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}

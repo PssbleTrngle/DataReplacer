@@ -36,8 +36,8 @@
       "ts-node": "^10.9.1"
    },
    "dependencies": {
-      "@pssbletrngle/pack-resolver": "1.1.1",
-      "@pssbletrngle/resource-merger": "1.2.0",
+      "@pssbletrngle/pack-resolver": "1.2.0",
+      "@pssbletrngle/resource-merger": "1.2.2",
       "@types/fs-extra": "^9.0.13",
       "@types/lodash": "^4.14.184",
       "@types/minimatch": "^3.0.5",

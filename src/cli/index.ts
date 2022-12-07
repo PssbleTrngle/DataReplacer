@@ -1,4 +1,4 @@
-import { createResolvers } from '@pssbletrngle/pack-resolver'
+import { createResolver } from '@pssbletrngle/pack-resolver'
 import chalk from 'chalk'
 import Replacer from '../replacer/Replacer.js'
 import getConfig from './config.js'
@@ -18,8 +18,7 @@ async function run() {
       replacer.replaceLang(search, replacement)
    })
 
-   const resolvers = createResolvers(options)
-
+   const resolvers = createResolver(options)
    await replacer.run(resolvers)
 }
 

@@ -1,4 +1,4 @@
-import { Acceptor, ResolverInfo } from '@pssbletrngle/pack-resolver'
+import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Mergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import chalk from 'chalk'
 import minimatch from 'minimatch'
@@ -98,17 +98,12 @@ export default class Replacer {
       }
    }
 
-   public async run(resolvers: ResolverInfo[]) {
+   public async run(resolver: IResolver) {
       const merger = createDefaultMergers(this.mergeOptions)
       const acceptor = this.createAcceptor(merger)
 
       console.group('Replacing resources...')
-      await Promise.all(
-         resolvers.map(async ({ resolver, name }) => {
-            console.log(name)
-            await resolver.extract(acceptor)
-         })
-      )
+      await resolver.extract(acceptor)
       console.groupEnd()
 
       await merger.finalize()
