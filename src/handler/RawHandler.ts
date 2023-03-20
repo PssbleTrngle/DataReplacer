@@ -1,7 +1,7 @@
 import { extname } from 'path'
 import { format } from 'prettier'
-import { ReplaceEntry } from '../replacer/Replacer'
-import { createTypedHandler } from './Handler'
+import { ReplaceEntry } from '../replacer/Replacer.js'
+import { createTypedHandler } from './Handler.js'
 
 export function stringMatches(input: string, { options, search }: ReplaceEntry) {
    if (options.ignoreCase) return input.toLowerCase().includes(search.toLowerCase())

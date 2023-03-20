@@ -1,9 +1,9 @@
 import { Acceptor, arrayOrSelf, createFilter, FilterOptions, IResolver } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import match from 'minimatch'
-import { Handler } from '../handler/Handler'
-import langHandler from '../handler/LangHandler'
-import rawHandler from '../handler/RawHandler'
+import { Handler } from '../handler/Handler.js'
+import langHandler from '../handler/LangHandler.js'
+import rawHandler from '../handler/RawHandler.js'
 
 export interface ReplaceEntryOptions {
    ignoreCase: boolean

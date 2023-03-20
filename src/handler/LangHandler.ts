@@ -1,5 +1,5 @@
-import { createTypedHandler } from './Handler'
-import { formatJson, replaceString, stringMatches } from './RawHandler'
+import { createTypedHandler } from './Handler.js'
+import { formatJson, replaceString, stringMatches } from './RawHandler.js'
 
 interface IntermediateType {
    values: Array<[string, string]>
