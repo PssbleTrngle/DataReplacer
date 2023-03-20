@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import type { ReplaceEntry } from '../replacer/Replacer'
+import type { ReplaceEntry } from '../replacer/Entries.js'
 
 export interface Handler {
    replace(entries: ReplaceEntry[], content: string | Buffer, path: string): string | Buffer | null

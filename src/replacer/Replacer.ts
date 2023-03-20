@@ -1,47 +1,17 @@
-import { Acceptor, arrayOrSelf, createFilter, FilterOptions, IResolver } from '@pssbletrngle/pack-resolver'
+import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
 import { createDefaultMergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
 import match from 'minimatch'
 import { Handler } from '../handler/Handler.js'
 import langHandler from '../handler/LangHandler.js'
 import rawHandler from '../handler/RawHandler.js'
-
-export interface ReplaceEntryOptions {
-   ignoreCase: boolean
-}
-
-type Matcher = (path: string) => boolean
-
-export interface ReplaceEntry {
-   matches: Matcher
-   search: string
-   replacement: string
-   options: ReplaceEntryOptions
-}
-
-interface Filter extends ReplaceEntryOptions, FilterOptions {
-   mod: string | string[]
-   test: Matcher
-}
-
-type SpecificFilter = Omit<Filter, 'include'>
-
-const defaultFilter: Filter = { mod: '*', ignoreCase: true, test: () => true }
-
-function resolveFilter(partialFilter: Partial<Filter> = {}) {
-   const filter = { ...defaultFilter, ...partialFilter }
-   const patternFilters = arrayOrSelf(filter.mod).map<Matcher>(mod => {
-      const [include, exclude] = [filter.include, filter.exclude]
-         .map(arrayOrSelf)
-         .map(it => it.map(pattern => pattern.replace(/\$mod/, mod)))
-      return createFilter({ include, exclude })
-   })
-
-   const matches: Matcher = it => filter.test(it) && patternFilters.some(test => test(it))
-   return { matches, options: filter }
-}
+import createJsonParser from '../parser/JsonParser.js'
+import Parser from '../parser/Parser.js'
+import { ModifyEntry, ReplaceEntry } from './Entries.js'
+import { FilterInput, resolveFilter, SpecificFilter } from './Options.js'
 
 export default class Replacer {
-   private entries: ReplaceEntry[] = []
+   private modifiers: ModifyEntry[] = []
+   private replacements: ReplaceEntry[] = []
    private handlers: { pattern: string; handler: Handler }[] = []
 
    constructor() {
@@ -52,9 +22,27 @@ export default class Replacer {
       this.handlers.push({ pattern, handler })
    }
 
-   public replace(search: string, replacement: string, filter?: Partial<Filter>) {
+   public replace(search: string, replacement: string, filter?: FilterInput) {
       const { matches, options } = resolveFilter(filter)
-      this.entries.push({ matches, search, replacement, options })
+      this.replacements.push({ matches, search, replacement, options })
+   }
+
+   public modify(filter: FilterInput, mapper: (input: string | Buffer) => string | Buffer) {
+      const { matches } = resolveFilter(filter)
+      this.modifiers.push({ mapper, matches })
+   }
+
+   private modifyWith<T>(parser: Parser<T>, filter: FilterInput, mapper: (input: T) => T) {
+      this.modify(filter, input => {
+         const parsed = parser.parse(input)
+         const modified = mapper(parsed)
+         return parser.encode(modified)
+      })
+   }
+
+   public modifyJson<T>(filter: FilterInput, mapper: (input: T) => T) {
+      const parser = createJsonParser<T>()
+      this.modifyWith(parser, filter, mapper)
    }
 
    public replaceLootItem(search: string, replacement: string, filter?: Partial<SpecificFilter>) {
@@ -83,11 +71,15 @@ export default class Replacer {
 
    public createAcceptor(output: Acceptor): Acceptor {
       return (path, content) => {
-         const matching = this.entries.filter(it => it.matches(path))
-         if (matching.length === 0) return false
+         const replacements = this.replacements.filter(it => it.matches(path))
+         const modifications = this.modifiers.filter(it => it.matches(path))
+
+         if (replacements.length === 0 && modifications.length === 0) return false
+
+         const modified = modifications.reduce((it, { mapper }) => mapper(it), content)
 
          const handler = this.getHandler(path) ?? rawHandler
-         const replaced = handler.replace(matching, content, path)
+         const replaced = handler.replace(replacements, modified, path)
 
          if (replaced) {
             return output(path, replaced)

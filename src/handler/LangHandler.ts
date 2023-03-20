@@ -1,19 +1,22 @@
+import createJsonParser from '../parser/JsonParser.js'
+import { replaceString, stringMatches } from '../textHelper.js'
 import { createTypedHandler } from './Handler.js'
-import { formatJson, replaceString, stringMatches } from './RawHandler.js'
 
 interface IntermediateType {
    values: Array<[string, string]>
    changed: string[]
 }
 
+const parser = createJsonParser<Record<string, string>>()
+
 const rawHandler = createTypedHandler<IntermediateType, string[]>({
    parse: content => {
-      const parsed: Record<string, string> = JSON.parse(content.toString())
+      const parsed = parser.parse(content)
       return { values: Object.entries(parsed), changed: [] }
    },
    encode: it => {
       const affectedContent = Object.fromEntries(it.values.filter(([key]) => it.changed.includes(key)))
-      return formatJson(JSON.stringify(affectedContent))
+      return parser.encode(affectedContent)
    },
    matches(entry, input) {
       const matches = input.values.filter(([, value]) => stringMatches(value, entry))
