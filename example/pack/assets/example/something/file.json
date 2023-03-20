@@ -1,0 +1,12 @@
+{
+   "array": [
+      {
+         "name": "Bear",
+         "size": 6
+      },
+      {
+         "name": "Cat",
+         "size": 2
+      }
+   ]
+}

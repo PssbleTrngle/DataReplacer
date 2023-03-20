@@ -1,111 +1,113 @@
-import { Acceptor, IResolver } from '@pssbletrngle/pack-resolver'
-import { createDefaultMergers, Mergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
-import chalk from 'chalk'
-import minimatch from 'minimatch'
-import { extname } from 'path'
-import { format } from 'prettier'
+import { Acceptor, arrayOrSelf, createFilter, FilterOptions, IResolver } from '@pssbletrngle/pack-resolver'
+import { createDefaultMergers, Options as MergeOptions } from '@pssbletrngle/resource-merger'
+import match from 'minimatch'
+import { Handler } from '../handler/Handler'
+import langHandler from '../handler/LangHandler'
+import rawHandler from '../handler/RawHandler'
 
-interface ReplaceEntryOptions {
+export interface ReplaceEntryOptions {
    ignoreCase: boolean
 }
 
-interface ReplaceEntry {
-   matches(path: string): boolean
+type Matcher = (path: string) => boolean
+
+export interface ReplaceEntry {
+   matches: Matcher
    search: string
    replacement: string
    options: ReplaceEntryOptions
 }
 
-function arrayOrSelf<T>(value: T | T[]) {
-   return Array.isArray(value) ? value : [value]
-}
-
-interface Filter extends ReplaceEntryOptions {
+interface Filter extends ReplaceEntryOptions, FilterOptions {
    mod: string | string[]
-   test(path: string): boolean
+   test: Matcher
 }
 
-const defaultFilter: Filter = { mod: '*', test: () => true, ignoreCase: true }
+type SpecificFilter = Omit<Filter, 'include'>
+
+const defaultFilter: Filter = { mod: '*', ignoreCase: true, test: () => true }
 
 function resolveFilter(partialFilter: Partial<Filter> = {}) {
    const filter = { ...defaultFilter, ...partialFilter }
-   return arrayOrSelf(filter.mod).map(mod => ({ ...filter, mod }))
+   const patternFilters = arrayOrSelf(filter.mod).map<Matcher>(mod => {
+      const [include, exclude] = [filter.include, filter.exclude]
+         .map(arrayOrSelf)
+         .map(it => it.map(pattern => pattern.replace(/\$mod/, mod)))
+      return createFilter({ include, exclude })
+   })
+
+   const matches: Matcher = it => filter.test(it) && patternFilters.some(test => test(it))
+   return { matches, options: filter }
 }
 
 export default class Replacer {
    private entries: ReplaceEntry[] = []
+   private handlers: { pattern: string; handler: Handler }[] = []
 
-   constructor(private readonly mergeOptions: MergeOptions) {}
+   constructor() {
+      this.addHandler('assets/*/lang/*.json', langHandler)
+   }
 
-   public replace(pattern: string, search: string, replacement: string, filter?: Partial<Filter>) {
-      resolveFilter(filter).forEach(({ mod, test, ...options }) => {
-         const resolvedPattern = pattern.replace(/\$mod/, mod)
-         const matches: ReplaceEntry['matches'] = it => minimatch(it, resolvedPattern) && test(it)
-         this.entries.push({ matches, search, replacement, options })
+   public addHandler(pattern: string, handler: Handler) {
+      this.handlers.push({ pattern, handler })
+   }
+
+   public replace(search: string, replacement: string, filter?: Partial<Filter>) {
+      const { matches, options } = resolveFilter(filter)
+      this.entries.push({ matches, search, replacement, options })
+   }
+
+   public replaceLootItem(search: string, replacement: string, filter?: Partial<SpecificFilter>) {
+      const wrap = (s: string) => `"name": "${s}"`
+      this.replace(wrap(search), wrap(replacement), {
+         ...filter,
+         include: [
+            'data/$mod/loot_tables/**/*.json',
+            'data/$mod/loot_modifiers/**/*.json',
+            'data/$mod/modifiers/loot_tables/**/*.json',
+         ],
       })
    }
 
-   public replaceLootItem(search: string, replacement: string, filter?: Partial<Filter>) {
-      const wrap = (s: string) => `"name": "${s}"`
-      this.replace('data/$mod/loot_tables/**/*.json', wrap(search), wrap(replacement), filter)
-   }
-
-   public replaceLang(search: string, replacement: string, filter?: Partial<Filter & { lang: string }>) {
-      this.replace(`assets/$mod/lang/${filter?.lang ?? '*'}.json`, search, replacement, {
+   public replaceLang(search: string, replacement: string, filter?: Partial<SpecificFilter & { lang: string }>) {
+      this.replace(search, replacement, {
          ignoreCase: false,
          ...filter,
+         include: `assets/$mod/lang/${filter?.lang ?? '*'}.json`,
       })
    }
 
-   private format(content: string, path: string) {
-      try {
-         switch (extname(path)) {
-            case '.json':
-            case '.mcmeta':
-               return format(content, { parser: 'json' })
-            default:
-               return content
-         }
-      } catch {
-         console.warn(chalk.yellow(`Could not parse ${chalk.underline(path)}`))
-         return null
-      }
+   public getHandler(path: string) {
+      return this.handlers.find(it => match(path, it.pattern))?.handler
    }
 
-   public createAcceptor(merger: Mergers): Acceptor {
-      const mergeAcceptor = merger.createAcceptor()
+   public createAcceptor(output: Acceptor): Acceptor {
       return (path, content) => {
-         const input = this.format(content.toString(), path)
-         if (!input) return false
+         const matching = this.entries.filter(it => it.matches(path))
+         if (matching.length === 0) return false
 
-         const matching = this.entries.filter(it => {
-            if (!it.matches(path)) return false
-            if (it.options.ignoreCase) return input.toLowerCase().includes(it.search.toLowerCase())
-            return input.includes(it.search)
-         })
+         const handler = this.getHandler(path) ?? rawHandler
+         const replaced = handler.replace(matching, content, path)
 
-         if (matching.length) {
-            console.log(`Found ${matching.length} matches for ${chalk.underline(path)}`)
-
-            const replaced = matching.reduce((current, entry) => {
-               return current.replace(new RegExp(entry.search, 'g'), entry.replacement)
-            }, input)
-
-            return mergeAcceptor(path, replaced)
+         if (replaced) {
+            return output(path, replaced)
          } else {
             return false
          }
       }
    }
 
-   public async run(resolver: IResolver) {
-      const merger = createDefaultMergers(this.mergeOptions)
-      const acceptor = this.createAcceptor(merger)
-
+   public async run(resolver: IResolver, output: Acceptor) {
       console.group('Replacing resources...')
+      const acceptor = this.createAcceptor(output)
       await resolver.extract(acceptor)
       console.groupEnd()
+   }
 
+   public async runAndMerge(resolver: IResolver, mergeOptions: MergeOptions) {
+      const merger = createDefaultMergers(mergeOptions)
+      const mergeAcceptor = merger.createAcceptor()
+      await this.run(resolver, mergeAcceptor)
       await merger.finalize()
    }
 }

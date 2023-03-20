@@ -6,7 +6,7 @@ import getOptions from './options.js'
 
 async function run() {
    const options = getOptions()
-   const replacer = new Replacer(options)
+   const replacer = new Replacer()
 
    const config = getConfig(options)
 
@@ -19,7 +19,7 @@ async function run() {
    })
 
    const resolvers = createResolver(options)
-   await replacer.run(resolvers)
+   await replacer.runAndMerge(resolvers, options)
 }
 
 run().catch(async e => {
